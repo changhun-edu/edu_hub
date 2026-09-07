@@ -54,8 +54,8 @@ a{color:inherit;}
 /* 히어로 */
 .hero{padding:var(--s6) 0 var(--s5);}
 .herogrid{display:grid;gap:var(--s5);}
-@media(min-width:900px){.herogrid{grid-template-columns:1fr 380px;gap:var(--s8);align-items:start;}}
-.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(24px,3.4vw,33px);line-height:1.4;letter-spacing:-.02em;margin:0 0 var(--s2);}
+@media(min-width:900px){.herogrid{grid-template-columns:minmax(0,1fr) 420px;gap:var(--s7);align-items:start;}}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(24px,3.4vw,33px);line-height:1.4;letter-spacing:-.02em;margin:0 0 var(--s2);max-width:15em;}
 .hero p.lede{margin:0 0 var(--s5);color:var(--muted);font-size:14.5px;}
 
 .searchrow{position:relative;max-width:520px;}
@@ -83,8 +83,9 @@ a{color:inherit;}
 }
 .maptoggle .mark{font-size:11px;color:var(--muted);}
 .map{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--s2);}
+@media(min-width:900px){.map{grid-template-columns:repeat(6,1fr);}}
 .cell{
-  min-height:56px;border:0;cursor:pointer;border-radius:2px;padding:var(--s1);
+  min-height:46px;border:0;cursor:pointer;border-radius:2px;padding:var(--s1);
   background:var(--kl);color:var(--k);
   font-family:var(--sans);font-size:11.5px;font-weight:600;line-height:1.3;letter-spacing:-.02em;
   display:flex;align-items:center;justify-content:center;text-align:center;word-break:keep-all;
@@ -92,14 +93,14 @@ a{color:inherit;}
 }
 .cell:hover,.cell:focus-visible{background:var(--k);color:#fff;transform:translateY(-2px);}
 .cell.dim{opacity:.3;}
-.maplabel{margin:var(--s3) 0 0;font-size:13px;color:var(--muted);line-height:1.6;min-height:2.6em;}
+.maplabel{margin:var(--s3) 0 0;font-size:13px;color:var(--muted);line-height:1.6;min-height:1.6em;}
 .maplabel b{color:var(--ink);font-weight:600;}
 @media(max-width:899px){
   .maptoggle{display:flex;}
   .mapbox{display:none;margin-top:var(--s3);}
   .mapbox.open{display:block;}
   .maplabel{display:none;}
-  .cell{min-height:60px;}
+  .cell{min-height:58px;}
 }
 
 /* 결과 요약 */
@@ -110,7 +111,8 @@ a{color:inherit;}
 .resultbar button:hover{border-color:var(--ink);color:var(--ink);}
 
 /* 부 섹션 */
-.part{padding:var(--s7) 0 0;}
+.part{padding:var(--s6) 0 0;}
+.part:first-child{padding-top:var(--s5);}
 .partrule{height:4px;width:40px;background:var(--k);margin-bottom:var(--s3);}
 .parthead{display:flex;align-items:baseline;gap:var(--s3);flex-wrap:wrap;}
 .parthead h2{font-family:var(--serif);font-weight:800;font-size:clamp(20px,2.4vw,25px);margin:0;letter-spacing:-.01em;}
@@ -512,7 +514,7 @@ $("#maplabel").textContent = DEFAULT_LABEL;
 $("#map").addEventListener("mouseover", e => {
   const c = e.target.closest(".cell"); if (!c) return;
   const s = SITES.find(x => keyOf(x) === c.dataset.go);
-  $("#maplabel").innerHTML = `<b>${esc(s.t)}</b><br>${esc(partOf(s.p).name)}`;
+  $("#maplabel").innerHTML = `<b>${esc(s.t)}</b> · ${esc(partOf(s.p).name)}`;
 });
 $("#map").addEventListener("mouseleave", () => { $("#maplabel").textContent = DEFAULT_LABEL; });
 
