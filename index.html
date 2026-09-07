@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>학교 업무를 바꾼 웹사이트 30</title>
-<meta name="description" content="초등학교에서 실제로 쓰려고 만든 서른 개의 웹사이트. 휴가 확인부터 반편성, 연수, 생활지도까지 링크 하나로 바로 씁니다.">
-<meta property="og:title" content="학교 업무를 바꾼 웹사이트 30">
+<title>학교 업무를 바꾼 웹사이트</title>
+<meta name="description" content="초등학교에서 실제로 쓰려고 만든 웹 도구 모음. 휴가 확인부터 반편성, 연수, 생활지도까지 링크 하나로 바로 씁니다.">
+<meta property="og:title" content="학교 업무를 바꾼 웹사이트">
 <meta property="og:description" content="학교에서 오가는 질문마다, 웹사이트 하나씩.">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,7 +47,6 @@ a{color:inherit;}
 .topbar{position:sticky;top:0;z-index:40;background:rgba(246,247,245,.93);backdrop-filter:saturate(160%) blur(8px);border-bottom:1px solid var(--line);}
 .topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:56px;gap:var(--s3);}
 .brand{font-family:var(--serif);font-weight:700;font-size:15.5px;letter-spacing:-.01em;white-space:nowrap;background:none;border:0;padding:0;color:var(--ink);cursor:pointer;}
-.brand span{color:var(--muted);font-weight:400;}
 .topnav{display:flex;gap:var(--s1);}
 .topnav button{font-family:var(--sans);font-size:13.5px;color:var(--ink-soft);cursor:pointer;padding:var(--s2) var(--s3);border:1px solid transparent;border-radius:2px;background:none;min-height:38px;}
 .topnav button:hover{border-color:var(--line-strong);background:#fff;}
@@ -205,7 +204,7 @@ footer .linkbtn:hover{color:var(--ink);}
 
 <div class="topbar">
   <div class="wrap">
-    <button class="brand" type="button" data-scroll="top">학교 업무를 바꾼 웹사이트 <span>30</span></button>
+    <button class="brand" type="button" data-scroll="top">학교 업무를 바꾼 웹사이트</button>
     <nav class="topnav">
       <button type="button" data-scroll="book">책 소개</button>
       <button type="button" data-scroll="notes">이용 안내</button>
@@ -217,7 +216,7 @@ footer .linkbtn:hover{color:var(--ink);}
   <div class="wrap herogrid">
     <div>
       <h1>학교에서 오가는 질문마다, 웹사이트 하나씩</h1>
-      <p class="lede">초등학교 교감이 만들어 학교에서 실제로 쓰는 도구들입니다. 회원가입도 설치도 없습니다.</p>
+      <p class="lede" id="lede"></p>
 
       <div class="searchrow">
         <label class="sr" for="q">지금 하는 일이나 찾는 도구를 검색하세요</label>
@@ -228,7 +227,7 @@ footer .linkbtn:hover{color:var(--ink);}
       <div class="chips" id="fpart" role="group" aria-label="분류로 걸러 보기"></div>
 
       <button class="maptoggle" type="button" id="maptoggle" aria-expanded="false" aria-controls="mapbox">
-        <span>서른 개 한눈에 보기</span><span class="mark" id="maptogglemark">펼치기</span>
+        <span id="maptoggletext">한눈에 보기</span><span class="mark" id="maptogglemark">펼치기</span>
       </button>
     </div>
 
@@ -251,9 +250,9 @@ footer .linkbtn:hover{color:var(--ink);}
   <div class="wrap">
     <section class="book" id="book">
       <h2>서른 개를 어떻게 만들었고, 무엇이 달라졌는지</h2>
-      <p>여기 있는 도구는 모두 학교에서 마주친 하나의 장면에서 시작됐습니다. 규정을 못 찾아 헤매던 오후, 같은 일정을 세 번 옮겨 적던 아침, 아이 앞에서 잠깐 망설였던 순간 같은 것들입니다. 그때마다 하나씩 만들어 두었더니 서른 개가 되었습니다.</p>
+      <p>여기 있는 도구는 모두 학교에서 마주친 하나의 장면에서 시작됐습니다. 규정을 못 찾아 헤매던 오후, 같은 일정을 세 번 옮겨 적던 아침, 아이 앞에서 잠깐 망설였던 순간 같은 것들입니다. 그때마다 하나씩 만들다 보니 여기까지 왔습니다.</p>
       <p>만드는 데 쓴 것은 바이브 코딩입니다. 전공자도 개발자도 아닌 사람이 필요한 것을 말로 설명해서 만들었습니다. 그래서 이 도구들은 잘 만든 소프트웨어라기보다 학교에서 쓸 만한 것에 가깝습니다.</p>
-      <p>각 도구가 왜 필요했고 만든 뒤에 무엇이 달라졌는지를 한 장에 하나씩 적어 책으로 묶고 있습니다. 지금 원고를 쓰는 중입니다.</p>
+      <p>이 가운데 서른 개를 골라, 왜 필요했고 만든 뒤에 무엇이 달라졌는지를 한 장에 하나씩 적어 책으로 묶고 있습니다. 지금 원고를 쓰는 중입니다.</p>
       <ul class="tocmini" id="tocmini"></ul>
       <span class="pending">출간되면 이 자리에 책 소개 링크가 올라갑니다.</span>
     </section>
@@ -441,6 +440,19 @@ const soften = () => !(window.matchMedia && window.matchMedia("(prefers-reduced-
 const isNarrow = () => !(window.matchMedia && window.matchMedia("(min-width: 900px)").matches);
 SITES.forEach((s, i) => { s.seq = i + 1; });
 
+/* 개수를 우리말로: 30 → "서른", 32 → "서른두". 100 이상은 숫자로. */
+function koCount(n){
+  const tens = ["","열","스물","서른","마흔","쉰","예순","일흔","여든","아흔"];
+  const ones = ["","한","두","세","네","다섯","여섯","일곱","여덟","아홉"];
+  if (n < 1 || n > 99) return String(n);
+  return (tens[Math.floor(n / 10)] || "") + ones[n % 10];
+}
+const COUNT = SITES.length;
+const COUNT_KO = koCount(COUNT) + " 개";
+
+$("#lede").textContent = "초등학교 교감이 만들어 학교에서 실제로 쓰는 도구들입니다. 지금까지 " + COUNT_KO + ", 회원가입도 설치도 없습니다.";
+$("#maptoggletext").textContent = COUNT_KO + " 한눈에 보기";
+
 let fPart = "all", query = "";
 
 /* ── 검색: 조사를 떼고 맞춰 봅니다 ── */
@@ -604,14 +616,14 @@ function render(){
 
 /* 책 코너 요약 */
 $("#tocmini").innerHTML = PARTS.map(p =>
-  `<li style="--k:${p.color}"><span class="k"></span>${esc(p.full)}<span class="num">${SITES.filter(s => s.p === p.id).length}장</span></li>`
+  `<li style="--k:${p.color}"><span class="k"></span>${esc(p.full)}<span class="num">${SITES.filter(s => s.p === p.id).length}개</span></li>`
 ).join("");
 
 if (LAST_CHECKED) $("#footcredit").textContent += " · 링크 점검 " + LAST_CHECKED;
 if (REPORT_EMAIL) $("#reportsite").hidden = false;
 function reportLink(name, url){
   return "mailto:" + REPORT_EMAIL
-    + "?subject=" + encodeURIComponent("[웹사이트 30] 내용 제보: " + name)
+    + "?subject=" + encodeURIComponent("[학교 업무를 바꾼 웹사이트] 내용 제보: " + name)
     + "&body=" + encodeURIComponent("도구: " + name + "\n주소: " + url + "\n\n어떤 내용이 잘못되었는지 적어 주세요.\n\n");
 }
 
@@ -641,7 +653,7 @@ document.addEventListener("click", e => {
     else if (t.hasAttribute("data-qr")) openModal("qr", SITES.find(s => keyOf(s) === t.getAttribute("data-qr")));
     else if (t.hasAttribute("data-resetall")) resetAll();
     else if (t.id === "copyall") copyAll();
-    else if (t.id === "reportsite") location.href = "mailto:" + REPORT_EMAIL + "?subject=" + encodeURIComponent("[웹사이트 30] 내용 제보");
+    else if (t.id === "reportsite") location.href = "mailto:" + REPORT_EMAIL + "?subject=" + encodeURIComponent("[학교 업무를 바꾼 웹사이트] 내용 제보");
     else if (t.hasAttribute("data-close")) closeModal();
     return;
   }
@@ -746,7 +758,7 @@ function fallback(text, done){
   document.body.removeChild(ta);
 }
 function copyAll(){
-  let out = "학교 업무를 바꾼 웹사이트 30\n\n";
+  let out = "학교 업무를 바꾼 웹사이트 (" + COUNT + "개)\n\n";
   PARTS.forEach(p => {
     out += p.name + "\n";
     SITES.filter(s => s.p === p.id).forEach(s => { out += "  " + s.seq + ". " + s.t + "\n  " + s.u + "\n"; });
