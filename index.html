@@ -35,6 +35,9 @@
 *{box-sizing:border-box;}
 html{-webkit-text-size-adjust:100%;}
 body{margin:0;background-color:var(--paper);background-image:var(--grain);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;}
+/* 한글이 낱말 한가운데서 갈라지지 않도록 — 띄어쓰기에서만 줄을 바꿉니다 */
+body,h1,h2,h3,p,li,button,a{word-break:keep-all;overflow-wrap:break-word;}
+.modal .box .u{word-break:break-all;}
 a{color:inherit;}
 :focus-visible{outline:2.5px solid var(--ink);outline-offset:2px;}
 .wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--s5);}
