@@ -75,6 +75,11 @@ a{color:inherit;}
 .searchrow input:focus{border-color:var(--ink);outline:none;box-shadow:0 0 0 3px rgba(22,32,46,.09);}
 .clearbtn{position:absolute;right:var(--s2);top:50%;transform:translateY(-50%);width:34px;height:34px;border:0;background:none;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;border-radius:50%;display:none;}
 .clearbtn:hover{background:var(--paper);color:var(--ink);}
+.qcount{position:absolute;right:48px;top:50%;transform:translateY(-50%);font-size:12.5px;font-weight:700;color:#fff;background:var(--ink);padding:3px 9px;border-radius:999px;pointer-events:none;display:none;white-space:nowrap;}
+.qcount.on{display:block;}
+.qcount.zero{background:var(--new);}
+.searchrow input.hasq{padding-right:104px;}
+.searchrow input::-webkit-search-cancel-button{-webkit-appearance:none;display:none;}
 .clearbtn.on{display:block;}
 
 .chips{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s4);}
@@ -318,6 +323,16 @@ footer{padding-bottom:calc(var(--s8) + 24px);}
 .mcard .mm{font-size:12.5px;color:var(--ink-soft);line-height:1.4;}
 .mcard .ma{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--k);font-size:18px;}
 @media(max-width:899px){.monthly{margin-top:var(--s5);}}
+.monthly.searching{margin-top:var(--s4);padding:var(--s4);border:1.5px solid var(--ink);background:#fff;border-radius:3px;}
+.monthly.searching .mnote{margin-bottom:var(--s3);}
+.mcard.best{grid-column:1 / -1;background:var(--kl);padding:14px 32px 14px 16px;}
+.mcard.best .mb{font-size:11.5px;font-weight:700;color:var(--k);letter-spacing:.02em;}
+.mcard.best .mt{font-size:17px;color:var(--ink);}
+.mcard.best .mm{font-size:13px;}
+.mall{grid-column:1 / -1;margin-top:2px;padding:10px;border:1px dashed var(--line-strong);background:transparent;cursor:pointer;font-family:var(--sans);font-size:13.5px;font-weight:600;color:var(--ink);border-radius:2px;}
+.mall:hover{background:var(--paper);}
+.cell.hit{background:var(--k);color:#fff;opacity:1;}
+.cell.top{box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--k);}
 .newbar{display:flex;align-items:stretch;max-width:520px;margin:0 0 var(--s4);border:1px solid color-mix(in srgb,var(--new) 35%,var(--line));background:#fff;border-radius:2px;}
 .newbar[hidden]{display:none;}
 .nb-go{flex:1;min-width:0;display:flex;align-items:center;gap:var(--s3);border:0;background:none;cursor:pointer;text-align:left;padding:10px var(--s4);font-family:var(--sans);font-size:14px;color:var(--ink);min-height:44px;}
@@ -361,13 +376,14 @@ footer{padding-bottom:calc(var(--s8) + 24px);}
       <div class="searchrow">
         <label class="sr" for="q">지금 하는 일이나 찾는 도구를 검색하세요</label>
         <input id="q" type="search" autocomplete="off" placeholder="낱말도 문장도 됩니다 — 예: 보결은 누가 들어가요?">
+        <span class="qcount" id="qcount" aria-live="polite"></span>
         <button class="clearbtn" id="clear" aria-label="검색어 지우기">×</button>
       </div>
 
       <div class="chips" id="fpart" role="group" aria-label="분류로 걸러 보기"></div>
 
       <section class="monthly" id="monthly" aria-labelledby="mtitle" hidden>
-        <h2 id="mtitle"><span class="mmon" id="mmon"></span>에 자주 꺼내는 도구</h2>
+        <h2 id="mtitle"></h2>
         <p class="mnote" id="mnote"></p>
         <div class="mlist" id="mlist"></div>
       </section>
@@ -1250,23 +1266,56 @@ function render(){
     else if (fPart !== "all") bits.push(partOf(fPart).name);
     $("#resulttext").innerHTML = esc(bits.join(" · ")) + ` — <strong>${total}개</strong>`;
   }
+  /* 검색창 바로 아래 결과 상자와 검색창 안 개수 */
+  const hits = query ? SITES.filter(match).sort((a, b) => ranked().get(keyOf(a)) - ranked().get(keyOf(b))) : [];
+  renderQuick(hits);
+  const qc = $("#qcount");
+  qc.classList.toggle("on", !!query);
+  qc.classList.toggle("zero", !!query && !hits.length);
+  qc.textContent = query ? (hits.length ? hits.length + "개" : "0개") : "";
+  $("#q").classList.toggle("hasq", !!query);
+  /* 오른쪽 타일: 맞는 칸은 진하게, 1순위는 이름표 띠에 */
+  document.querySelectorAll(".cell[data-go]").forEach(c => {
+    c.classList.toggle("hit", !!query && hits.some(s => keyOf(s) === c.dataset.go));
+    c.classList.toggle("top", !!query && hits.length > 0 && keyOf(hits[0]) === c.dataset.go);
+  });
+  showLabel(query && hits.length ? document.querySelector(`.cell[data-go="${keyOf(hits[0])}"]`) : null);
 }
 
-/* 이번 달에 꺼내는 도구 */
-(function(){
-  const mo = TODAY0.getMonth() + 1, M = MONTHLY[mo];
-  if (!M) return;
-  const list = M.keys.map(k => SITES.find(s => keyOf(s) === k)).filter(Boolean).slice(0, 4);
-  if (!list.length) return;
-  $("#mmon").textContent = mo + "월";
+/* 이번 달에 꺼내는 도구 ↔ 검색 중에는 같은 자리에 검색 결과 */
+const MONTH_NO = TODAY0.getMonth() + 1;
+function mcard(s, best){
+  const p = partOf(s.p);
+  return `<button type="button" class="mcard${best ? " best" : ""}" data-go="${keyOf(s)}" style="--k:${p.color};--kl:${p.light}">
+    ${best ? '<span class="mb">가장 잘 맞는 도구</span>' : ""}<span class="mt">${esc(best ? s.t : s.tag)}</span><span class="mm">${esc(best ? s.d : (s.m || s.t))}</span><span class="ma" aria-hidden="true">›</span></button>`;
+}
+function renderQuick(items){
+  const box = $("#monthly");
+  if (query){
+    box.classList.add("searching");
+    box.hidden = false;
+    if (items.length){
+      $("#mtitle").innerHTML = `검색 결과 <span class="mmon">${items.length}개</span>`;
+      $("#mnote").textContent = "질문과 잘 맞는 순서입니다. Enter(검색 키)를 누르면 첫 번째 도구로 갑니다.";
+      $("#mlist").innerHTML = mcard(items[0], true) + items.slice(1, 4).map(s => mcard(s)).join("")
+        + `<button type="button" class="mall" data-scroll="list">결과 ${items.length}개 모두 보기 ↓</button>`;
+    } else {
+      const near = nearest(query);
+      $("#mtitle").innerHTML = `찾는 낱말로는 <span class="mmon">없습니다</span>`;
+      $("#mnote").textContent = near.length ? "혹시 이 가운데 있을까요? ‘휴가’, ‘반편성’처럼 짧게 넣어도 됩니다." : "‘휴가’, ‘반편성’, ‘연수’처럼 짧게 넣어 보세요.";
+      $("#mlist").innerHTML = near.map(s => mcard(s)).join("");
+    }
+    return;
+  }
+  box.classList.remove("searching");
+  const M = MONTHLY[MONTH_NO];
+  const list = M ? M.keys.map(k => SITES.find(s => keyOf(s) === k)).filter(Boolean).slice(0, 4) : [];
+  if (!list.length){ box.hidden = true; return; }
+  $("#mtitle").innerHTML = `<span class="mmon">${MONTH_NO}월</span>에 자주 꺼내는 도구`;
   $("#mnote").textContent = M.note;
-  $("#mlist").innerHTML = list.map(s => {
-    const p = partOf(s.p);
-    return `<button type="button" class="mcard" data-go="${keyOf(s)}" style="--k:${p.color};--kl:${p.light}">
-      <span class="mt">${esc(s.tag)}</span><span class="mm">${esc(s.m || s.t)}</span><span class="ma" aria-hidden="true">›</span></button>`;
-  }).join("");
-  $("#monthly").hidden = false;
-})();
+  $("#mlist").innerHTML = list.map(s => mcard(s)).join("");
+  box.hidden = false;
+}
 
 /* 책 코너 요약 */
 $("#tocmini").innerHTML = PARTS.map(p =>
@@ -1307,6 +1356,12 @@ qEl.addEventListener("input", () => {
   query = qEl.value.trim();
   clearEl.classList.toggle("on", !!query);
   render(); saveView();
+});
+qEl.addEventListener("keydown", e => {
+  if (e.key !== "Enter" || e.isComposing) return;
+  e.preventDefault();
+  const first = query && SITES.filter(match).sort((a, b) => ranked().get(keyOf(a)) - ranked().get(keyOf(b)))[0];
+  if (first){ qEl.blur(); goTo(keyOf(first)); }
 });
 clearEl.addEventListener("click", () => { qEl.value = ""; query = ""; clearEl.classList.remove("on"); render(); saveView(); qEl.focus(); });
 
