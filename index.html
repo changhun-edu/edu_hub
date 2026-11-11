@@ -276,6 +276,7 @@ footer .linkbtn:hover{color:var(--ink);}
 .ch-chips{display:flex;flex-wrap:wrap;gap:6px;align-self:flex-start;max-width:100%;}
 .ch-chips button{font-family:var(--sans);font-size:13px;padding:7px 11px;border:1px solid var(--line-strong);background:#fff;color:var(--ink);border-radius:999px;cursor:pointer;}
 .ch-chips button:hover,.ch-chips button:focus-visible{border-color:var(--ink);background:var(--ink);color:#fff;}
+.ch-chips .ch-call{font-family:var(--sans);font-size:13.5px;font-weight:700;padding:8px 14px;border-radius:999px;background:var(--new);color:#fff;text-decoration:none;}
 .ch-chips button.ghost{border-style:dashed;color:var(--ink-soft);}
 .ch-card{align-self:stretch;background:#fff;border:1px solid var(--line);border-left:4px solid var(--k);border-radius:4px;padding:11px 12px;}
 .ch-card .cc-k{font-size:11.5px;font-weight:700;color:var(--k);}
@@ -911,6 +912,9 @@ const SYNS = [
   /* 연수·법정교육·전문성 */
   [/연수비|연수\s*(비용|경비|예산|지원)|영수증|정산/, "자율연수비 정산"],
   [/법정\s*(의무)?\s*(교육|연수)|의무\s*(교육|연수)|의무\s*이수/, "법정교육 의무교육"],
+  [/예방\s*교육/, "법정교육^2 의무교육"],
+  [/(저|나|제게|교사|선생님|담임)(한테|에게|보고).{0,24}(라고|이라고|욕)/, "교권^2 침해 교육활동 판별"],
+  [/(친구|다른\s*(학생|아이)|반\s*친구)(한테|에게|를|보고).{0,24}(라고|이라고|불렀|놀렸|놀려)/, "학교폭력^2"],
   [/수업\s*(역량|전문성|성장|나눔|공개|컨설팅|개선|진단)|교내\s*연수|전문적\s*학습\s*공동체|전학공|자율\s*연수.*(적용|공유)/, "수업역량 수업 성장"],
   [/\bai\b|인공\s*지능|생성형|챗\s*gpt|chatgpt|gpt|에듀\s*테크|디지털/i, "AI 디지털 에듀테크"],
   [/코딩|프로그래밍|소프트웨어|sw\s*교육|웹\s*(사이트|앱)\s*만들|바이브/i, "코딩 바이브코딩"],
@@ -956,7 +960,7 @@ const SYNS = [
   [/학교\s*폭력|학폭|다툼|싸움|괴롭힘|친구를?\s*(때|밀|놀리)|피해\s*학생|가해\s*학생|심의\s*위원회/, "학교폭력"]
 ];
 /* 질문에 흔히 붙어 점수에 넣지 않는 말 */
-const STOP = new Set(["초등학교","초등","초등학생","학교","학생","학생이","교사","교사가","선생님","담임","담임교사","교직원","아이","아동","어떻게","어떤","어느","무엇","무엇이","무엇인가","언제","어디","어디까지","경우","해야","하나","되나","있나","없나","필요한가","가능한가","가능","방법","방법은","절차","절차가","순서","단계","처리","처리해야","대응","조치","기준","내용","사항","관련","위해","위한","대해","반드시","별도","별도의","다른","같은","모든","각각","어떤","효과적","효과적인","적절","적절한","바람직한","구체적인","좋을","좋은","우리","저희","혹시","그리고","그런데","정말","이런","그런","수","때","및","등","것","거","것이","것은","있는","하는","되는","받을","받아야","있을","해도","되나요","하나요","있나요","인가요","할까요","될까요","실시","진행","운영","발생","주의","주의해야","확인","확인해야","준비","적용","반영","포함","제공","인정","인정받을","요청","사용","활용","지원","지도","필요","필요한","학교에서","학교는","학교의"]);
+const STOP = new Set(["사이트","사이트를","사이트는","초등학교","초등","초등학생","학교","학생","학생이","교사","교사가","선생님","담임","담임교사","교직원","아이","아동","어떻게","어떤","어느","무엇","무엇이","무엇인가","언제","어디","어디까지","경우","해야","하나","되나","있나","없나","필요한가","가능한가","가능","방법","방법은","절차","절차가","순서","단계","처리","처리해야","대응","조치","기준","내용","사항","관련","위해","위한","대해","반드시","별도","별도의","다른","같은","모든","각각","어떤","효과적","효과적인","적절","적절한","바람직한","구체적인","좋을","좋은","우리","저희","혹시","그리고","그런데","정말","이런","그런","수","때","및","등","것","거","것이","것은","있는","하는","되는","받을","받아야","있을","해도","되나요","하나요","있나요","인가요","할까요","될까요","실시","진행","운영","발생","주의","주의해야","확인","확인해야","준비","적용","반영","포함","제공","인정","인정받을","요청","사용","활용","지원","지도","필요","필요한","학교에서","학교는","학교의"]);
 /* 흔해서 약하게만 세는 말 */
 const LOW = new Set(["수업","학부모","연수","교육","학급","학년","업무","계획","서류","상담","안전","결석"]);
 const SUFFIX = ["으로부터","에서부터","이라면","에게서","으로서","으로써","이에요","이었는데","했는데","었는데","았는데","하려면","으려면","려면","해야","하고","하는","하면","해서","했을","하였","에서는","으로는","에게는","에서","에게","한테","까지","부터","으로","이랑","처럼","보다","이나","이며","이고","인데","는데","은데","하여","되어","된다","한다","하다","이다","습니다","합니다","니다","나요","가요","까요","어요","아요","해요","에요","예요","라도","이라도","은","는","이","가","을","를","에","의","도","만","와","과","로","요","고","면","지","한","할","된","될"];
@@ -1595,7 +1599,7 @@ const CHAT_MENU = [
 ];
 /* 짧고 애매한 질문이면 한 번 되묻습니다: [이런 말이 있고, 이런 말이 없으면, 이렇게 묻기(숫자는 CHAT_MENU 번호)] */
 const CHAT_ASK = [
-  [/결석|빠지|안\s*나와|못\s*나와|안\s*와/, /아프|아파|병원|감염|독감|수두|체험|여행|연락|무단|미인정|학원|코로나|장기|가정\s*방문|경찰|며칠째|일주일|감기|열|결혼|경조사|선수|대회|조퇴/, 1],
+  [/결석|빠지|안\s*나와|못\s*나와|안\s*와/, /아프|아파|병원|감염|전염|독감|수두|체험|여행|연락|무단|미인정|학원|코로나|장기|가정\s*방문|경찰|며칠째|일주일|감기|열|결혼|경조사|선수|대회|조퇴/, 1],
   [/전학|전입|전출/, /외국|국적|다문화|졸업|진급|귀국/, { ask:"어떤 전학인가요?", opts:[["일반 전입·전출","1-20"],["외국 국적·외국에서 온 학생","1-3"]] }],
   [/상담/, /민원|준비|친구|관계|주간|연습/, { ask:"어떤 상담인가요?", opts:[["학부모 상담 준비·연습","4-5"],["상담인지 민원인지 구분","4-6"],["친구 관계 고민","4-2"]] }],
   [/체험\s*학습|현장\s*학습|소풍/, /교외|가정|가족|여행|현장|인솔|안전|사고|보고서|신청|기한/, { ask:"어떤 체험학습인가요?", opts:[["가정에서 신청하는 교외체험학습","2-2"],["학교에서 가는 현장체험학습 안전","1-6"]] }],
@@ -1641,8 +1645,8 @@ const CHAT_INFO = [
   [/(너|넌|길잡이)(는|은)?\s*(누구|뭐|무엇)|길잡이.{0,6}(ai|인공\s*지능)|(^|\s)(ai|인공\s*지능|챗\s*gpt)(야|니|예요|에요|인가요)\??$/i, () => ({ html:"저는 학교 연장통의 <b>길잡이</b>예요. AI가 아니라 정해진 규칙과 검색으로 알맞은 도구를 찾아 드려요. 그래서 규정을 직접 판단해 답하지는 않고, 확인할 수 있는 도구로 안내해요. 적은 내용은 이 기기 밖으로 나가지 않아요.", chips:"menu" })],
   [/상담원|사람(과|이랑|하고|한테)\s*(연결|상담|얘기)|직원\s*연결|전화\s*(연결|상담)/, () => ({ html:"사람 상담 연결은 없어요. 상황을 적어 주시면 알맞은 도구를 찾아 드릴게요.", chips:"menu" })],
   [/(도구들|도구\s*(전부|모두|전체)|모든\s*도구|전체\s*도구).{0,10}(설명|소개|알려)|하나씩\s*(설명|소개)/, () => ({ html:"도구는 네 갈래로 나뉘어 있어요. " + PARTS.map(p => `<b>${esc(p.name)}</b> ${SITES.filter(s => s.p === p.id).length}개`).join(" · ") + ".<br>분야를 고르시면 그 안의 도구를 하나씩 보여 드릴게요.", chips:"menu" })],
-  [/^(이|그|저)\s*(도구|사이트)\s*(설명|소개|뭐)/, () => ({ html:"어느 도구가 궁금하세요? 도구 이름을 적거나 분야를 골라 주세요.", chips:"menu" })],
-  [/(이|여기|이\s*사이트|이곳)\s*(는|은)?\s*(뭐|무엇|어떤)\s*(하는|곳|사이트)|연장통(이|은|는)?\s*(뭐|무엇|어떤)|뭐\s*하는\s*(곳|사이트)/, () => ({ html:`학교 연장통은 초등학교 교감이 바이브 코딩으로 만들어 학교에서 실제로 쓰는 웹 도구 <b>${SITES.length}개</b>를 모은 곳이에요. 회원가입이나 설치 없이 링크 하나로 바로 씁니다.`, chips:"menu" })],
+  [/^(이|그|저)\s*도구\s*(설명|소개|뭐)/, () => ({ html:"어느 도구가 궁금하세요? 도구 이름을 적거나 분야를 골라 주세요.", chips:"menu" })],
+  [/(이|여기|이\s*사이트|이곳)\s*(는|은)?\s*(뭐|무엇|어떤)\s*(하는|곳|사이트)|연장통(이|은|는)?\s*(뭐|무엇|어떤)|뭐\s*하는\s*(곳|사이트)|(사이트|연장통|여기|이곳)(을|를|에\s*대해)?\s*(소개|설명|알려)|^소개(해|좀|부탁)/, () => ({ html:`학교 연장통은 초등학교 교감이 바이브 코딩으로 만들어 학교에서 실제로 쓰는 웹 도구 <b>${SITES.length}개</b>를 모은 곳이에요. 회원가입이나 설치 없이 링크 하나로 바로 씁니다.`, chips:"menu" })],
   [/(도구|사이트)(가|는)?\s*(모두|전부|총)?\s*몇\s*(개|가지)|개수/, () => ({ html:`지금 도구는 모두 <b>${SITES.length}개</b>예요. ` + PARTS.map(p => `${esc(p.name)} ${SITES.filter(s => s.p === p.id).length}`).join(" · ") + "." })],
   [/무료|유료|공짜|돈\s*(내|들|드)|사용료|이용료|회원\s*가입|로그인|가입해야/, () => ({ html:"모두 <b>무료</b>예요. 회원가입이나 로그인, 설치도 필요 없어요." })],
   [/pc\s*(에서만|전용|권장)|컴퓨터\s*(에서만|로만)/i, () => pcInfo(), 1],
@@ -1688,7 +1692,7 @@ const NAMEIDX = SITES.map(s => {
     const p = w.slice(i, j).join("");
     if ((j - i >= 2 && p.length >= 4) || (w.length === 1 && p.length >= 4)) out.push(p);
   }
-  if (s.tag.length >= 2) out.push(s.tag + "도구");
+  if (s.tag.length >= 2) out.push(s.tag + "도구", s.tag + "사이트");
   return { s, names: out };
 });
 /* 글 안에 그대로 들어 있는 도구 태그(3자 이상: ‘안전’ 같은 흔한 두 글자는 빼고) */
@@ -1710,9 +1714,54 @@ function looksPersonal(text){
   return !NOT_NAME.test(m[0]) && !SITES.some(s => s.tag === w || w.startsWith(s.tag));
 }
 const NUM_Q = /며칠|몇\s*일|몇일|몇\s*시간|몇\s*번|몇\s*회|기한|언제까지|몇\s*년|몇\s*개월/;
+/* ── 먼저 거르는 말: 위기 신호 · 욕설 · 의미 없는 입력 · 업무 밖 질문 · 감정 토로 ──
+   입력 내용은 저장하지 않고 기기 밖으로 보내지 않습니다. 차단·신고 없이 응답만 정중하게 바꿉니다. */
+const CRISIS = /죽고\s*싶|죽을\s*것\s*같|죽어\s*버리|자살|자해|사라지고\s*싶|없어지고\s*싶|살기\s*싫|살고\s*싶지\s*않|다\s*끝내고\s*싶|목숨을?\s*끊|극단적\s*선택|손목을?\s*긋/;
+const CRISIS_NOT = /예방\s*교육|법정\s*교육|연수\s*자료|교육\s*자료/;
+const ABUSE = /씨발|씨바|시발|ㅅㅂ|ㅆㅂ|ㅅㅂ|씹|좆|좃|ㅈ같|존나|졸라|병신|ㅂㅅ|븅신|빙신|미친\s*(놈|년|새)|개새|개색|개세|ㄱㅅㄲ|새끼(?!\s*(손|발|줄|고양|강아|양|돼지|곰))|쌔끼|닥쳐|꺼져|엿\s*먹|지랄|ㅈㄹ|(^|[^감전])염병|썅|등신|또라이|멍청|바보(?!\s*상자)|fuck|shit|bitch/i;
+/* 욕설을 '들은 일'을 설명하는 질문은 거르지 않고 교권·생활지도로 안내합니다 */
+const ABUSE_REPORT = /욕(을|설|했|해|하|먹)|라고\s*(했|말|하|불러|욕)|이라고|들었|불렀|한테\s*.{0,12}(했|해요)/;
+const OFFTOPIC = /로또|복권|주식|코인|비트\s*코인|점심\s*(메뉴|뭐)|저녁\s*(메뉴|뭐)|뭐\s*먹(지|을까)|맛집|연애|애인|운세|사주|타로|게임\s*추천|노래\s*추천|영화\s*추천|드라마\s*추천|부동산|집값|아파트\s*값/;
+const EMOTION = /짜증|화가?\s*나|열\s*받|힘들(어|다|네|고|었)|지쳤|지친|지쳐|우울|속상|억울|스트레스|번아웃|그만두고\s*싶|때려\s*치|울고\s*싶|무서워|불안해|괴로/;
+const LATIN_OK = /^(ai|qr|pc|gpt|chatgpt|neis|sw|hwp|hwpx|vercel|github|firebase|wee|ok|hi|hello|thanks?)$/i;
+function isGibberish(text){
+  const t = text.replace(/[\s\p{P}\p{S}\d]/gu, "");
+  if (!t) return true;                                     /* 기호·숫자만 */
+  if (/^[ㄱ-ㅎㅏ-ㅣ]+$/.test(t)) return true;                /* ㅋㅋ·ㅇㅇ처럼 자모만 */
+  if (/^[a-z]+$/i.test(t) && !LATIN_OK.test(t) && t.length >= 3) return true;   /* 자판 막 누르기 */
+  const top = Math.max(...[...new Set(t)].map(c => t.split(c).length - 1));
+  return t.length >= 5 && top / t.length >= 0.7;           /* 같은 글자 반복 */
+}
+/* 감정 토로에 덧붙일 도구: [이런 말이 있으면, 이 도구] */
+const EMO_HELP = [
+  [/학부모|보호자|민원|전화|문자|카톡/, ["4-6","1-14"]],
+  [/학생|아이|반\s*애들|수업\s*방해/, ["4-4","1-14"]],
+  [/업무|일이\s*(많|너무)|공문|야근|초과/, ["1-19","1-2"]],
+  [/교장|교감|관리자|동료|선배|부장/, ["1-2"]]
+];
 /* 질문 → 답의 설계도(화면 없이 판단만) */
 function chatDecide(text){
   const plan = { warn: looksPersonal(text) };
+  /* ① 위기 신호: 다른 처리보다 먼저, 도구 안내를 멈춥니다 */
+  if (CRISIS.test(text) && !CRISIS_NOT.test(text)) return { type:"crisis" };
+  /* ② 욕설·비하 (욕설을 들은 상황 설명은 제외) */
+  if (ABUSE.test(text) && !ABUSE_REPORT.test(text)) return { type:"info", html:"그런 말에는 답하기 어려워요. 학교 일로 도울 일이 있으면 편하게 말씀해 주세요.", chips:"menu" };
+  /* ③ 의미 없는 입력 */
+  if (isGibberish(text)) return { type:"info", html:"무슨 일인지 조금 더 적어 주시겠어요? 이렇게 물어보셔도 돼요.", chips:"examples" };
+  /* ④ 업무와 무관한 질문 */
+  if (OFFTOPIC.test(text)) return { type:"info", html:"길잡이는 학교 연장통의 업무 도구만 안내할 수 있어요. 그 질문은 도와드리기 어려워요.", chips:"menu" };
+  /* ⑤ 감정 토로: 공감 한마디를 앞에 붙이고, 맞는 도구가 없으면 조심스럽게 제안 */
+  plan.empathy = EMOTION.test(text);
+  const out = chatDecideTools(text, plan);
+  /* 감정 토로인데 도구 점수가 낮으면(‘교장’→‘학교장 허가’처럼 우연히 겹친 경우) 엉뚱한 도구 대신 공감 답 */
+  const shaky = out.type === "tools" && !out.list && out.topScore !== undefined && out.topScore < 10;
+  if (plan.empathy && (out.type === "none" || out.type === "weak" || out.type === "near" || shaky)){
+    const keys = []; EMO_HELP.forEach(([re, ks]) => { if (re.test(text)) ks.forEach(k => { if (!keys.includes(k)) keys.push(k); }); });
+    return { type:"info", warn:plan.warn, html:"많이 힘드셨겠어요. 잠시라도 숨을 고르시길 바라요." + (keys.length ? " 도움이 될 만한 도구도 함께 놓아 둘게요." : "") + "<br>마음이 계속 무겁다면 교육청 <b>교원치유지원센터</b>(교권보호센터)에서 상담을 받을 수 있어요.", keys:keys.slice(0, 2) };
+  }
+  return out;
+}
+function chatDecideTools(text, plan){
   const raw = qWords(text).map(stemKo).filter(w => w.length >= 2 && !STOP.has(w));
   const ment = mentioned(text);
   const compare = /차이|달라|다른\s*점|다르|비교|뭘\s*먼저|무엇을\s*먼저|어느\s*(게|것|쪽)|같이\s*써|둘\s*다|중에?서?\s*.{0,12}(뭐가|어느|어디|먼저|좋아)|vs/i.test(text);
@@ -1748,13 +1797,10 @@ function chatDecide(text){
     }
   }
   const r = rankSites(text);
-  if (!r.length){
-    const near = nearest(text);
-    return Object.assign(plan, near.length ? { type:"near", keys:near.map(keyOf) } : { type:"none" });
-  }
+  if (!r.length) return Object.assign(plan, { type:"none" });   /* 글자 하나씩 맞춘 ‘가까운 도구’는 길잡이에서 쓰지 않습니다 */
   const top = SIDX.find(d => d.s === r[0].s);
   if (r[0].sc < WEAK_SCORE && raw.length >= 2 && !raw.every(w => top.all.includes(w))) return Object.assign(plan, { type:"weak", keys:r.slice(0, 2).map(x => keyOf(x.s)) });
-  return Object.assign(plan, { type:"tools", keys:r.slice(0, 3).map(x => keyOf(x.s)), detail:true, num:NUM_Q.test(text) });
+  return Object.assign(plan, { type:"tools", keys:r.slice(0, 3).map(x => keyOf(x.s)), detail:true, num:NUM_Q.test(text), topScore:r[0].sc });
 }
 /* 도구 한 줄 정보: 대상 · PC 권장 · 서버 저장 · 준비물 */
 function factLine(s){
@@ -1807,6 +1853,14 @@ function chatHome(){
 function chatRender(plan, text){
   if (plan.warn) chatSay("💡 학생 이름 같은 개인정보는 빼고 물어봐 주세요. 이 길잡이는 내용을 저장하지 않지만, 습관이 되면 다른 곳에서도 안전해요.");
   const sites = (plan.keys || []).map(siteBy).filter(Boolean);
+  if (plan.type === "crisis"){
+    chatSay("많이 힘드시군요. 이 마음을 혼자 견디지 않으셔도 돼요.<br>지금 이야기할 사람이 필요하면 <b>자살예방 상담전화 109</b>에 전화해 주세요. 24시간 열려 있어요. 위급한 상황이면 <b>112</b>나 <b>119</b>에 바로 연락해 주세요.<br><br>학생에 관한 일이라면 혼자 판단하지 마시고, 학교 위기관리위원회·Wee 클래스와 함께 바로 대응해 주세요.");
+    const d = document.createElement("div"); d.className = "ch-chips";
+    d.innerHTML = `<a class="ch-call" href="tel:109">109에 전화하기</a><button type="button" class="ghost" data-ca="home">처음으로</button>`;
+    chat.log.appendChild(d); chatScroll();
+    return;
+  }
+  if (plan.empathy && plan.type !== "info") chatSay("많이 힘드셨겠어요. 도움이 될 만한 도구를 찾아볼게요.");
   switch (plan.type){
     case "info":
       if (plan.act === "home"){ chatHome(); return; }
