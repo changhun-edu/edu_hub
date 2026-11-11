@@ -254,6 +254,51 @@ footer .linkbtn:hover{color:var(--ink);}
 #toast{position:fixed;left:50%;bottom:var(--s5);transform:translateX(-50%) translateY(14px);background:var(--ink);color:#fff;font-size:13.5px;padding:var(--s3) var(--s4);border-radius:3px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:90;}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
 
+/* ── 연장통 길잡이(규칙형 대화 안내) ── */
+#chatbtn{position:fixed;right:var(--s4);bottom:calc(var(--s4) + 48px);z-index:72;display:flex;align-items:center;gap:8px;
+  font-family:var(--sans);font-size:14px;font-weight:700;color:#fff;background:var(--ink);border:0;border-radius:999px;
+  padding:10px 16px 10px 10px;cursor:pointer;box-shadow:0 6px 18px rgba(22,32,46,.22);transition:transform .12s;}
+#chatbtn:hover{transform:translateY(-2px);}
+#chatbtn .cb-i{width:26px;height:26px;border-radius:50%;background:var(--new);display:flex;align-items:center;justify-content:center;font-size:15px;}
+#chatbtn.hide{display:none;}
+#chat{position:fixed;right:var(--s4);bottom:var(--s4);z-index:90;width:380px;max-width:calc(100vw - 32px);height:min(600px,calc(100vh - 96px));
+  display:flex;flex-direction:column;background:#fff;border:1px solid var(--line-strong);border-radius:6px;box-shadow:0 18px 50px rgba(22,32,46,.25);overflow:hidden;}
+#chat[hidden]{display:none;}
+.ch-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:14px 14px 12px 16px;background:var(--ink);color:#fff;}
+.ch-head h2{margin:0;font-family:var(--serif);font-size:18px;font-weight:700;}
+.ch-head p{margin:2px 0 0;font-size:12.5px;color:rgba(255,255,255,.72);}
+.ch-x{width:34px;height:34px;border:0;background:transparent;color:#fff;font-size:22px;cursor:pointer;border-radius:50%;}
+.ch-x:hover{background:rgba(255,255,255,.12);}
+.ch-log{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--paper);}
+.msg{max-width:88%;font-size:14px;line-height:1.55;padding:9px 12px;border-radius:12px;word-break:keep-all;}
+.msg.bot{align-self:flex-start;background:#fff;border:1px solid var(--line);border-top-left-radius:3px;color:var(--ink);}
+.msg.me{align-self:flex-end;background:var(--ink);color:#fff;border-top-right-radius:3px;}
+.ch-chips{display:flex;flex-wrap:wrap;gap:6px;align-self:flex-start;max-width:100%;}
+.ch-chips button{font-family:var(--sans);font-size:13px;padding:7px 11px;border:1px solid var(--line-strong);background:#fff;color:var(--ink);border-radius:999px;cursor:pointer;}
+.ch-chips button:hover,.ch-chips button:focus-visible{border-color:var(--ink);background:var(--ink);color:#fff;}
+.ch-chips button.ghost{border-style:dashed;color:var(--ink-soft);}
+.ch-card{align-self:stretch;background:#fff;border:1px solid var(--line);border-left:4px solid var(--k);border-radius:4px;padding:11px 12px;}
+.ch-card .cc-k{font-size:11.5px;font-weight:700;color:var(--k);}
+.ch-card .cc-t{display:block;margin-top:2px;font-size:15px;font-weight:700;color:var(--ink);}
+.ch-card .cc-d{margin:4px 0 8px;font-size:13px;color:var(--ink-soft);line-height:1.5;}
+.ch-card .cc-a{display:flex;gap:6px;flex-wrap:wrap;}
+.ch-card .cc-a a,.ch-card .cc-a button{font-family:var(--sans);font-size:12.5px;font-weight:600;padding:6px 10px;border-radius:3px;cursor:pointer;text-decoration:none;}
+.ch-card .cc-a a{background:var(--k);color:#fff;border:1px solid var(--k);}
+.ch-card .cc-a button{background:#fff;color:var(--ink);border:1px solid var(--line-strong);}
+.ch-card.main{background:var(--kl);}
+.ch-in{display:flex;gap:6px;padding:10px;border-top:1px solid var(--line);background:#fff;}
+.ch-in input{flex:1;min-width:0;font-family:var(--sans);font-size:16px;padding:10px 12px;border:1.5px solid var(--line-strong);border-radius:999px;}
+.ch-in input:focus{outline:none;border-color:var(--ink);}
+.ch-in button{width:42px;height:42px;flex:none;border:0;border-radius:50%;background:var(--ink);color:#fff;font-size:18px;font-weight:700;cursor:pointer;}
+.ch-note{margin:0;padding:0 12px 10px;font-size:11.5px;color:var(--muted);line-height:1.5;background:#fff;}
+@media(max-width:599px){
+  #chatbtn .cb-t{display:none;}
+  #chatbtn{padding:10px;}
+  #chatbtn .cb-i{width:30px;height:30px;font-size:17px;}
+  #chat{inset:0;width:auto;max-width:none;height:auto;border-radius:0;border:0;}
+}
+@media print{#chatbtn,#chat{display:none !important;}}
+
 /* 오픈소스 라이선스 */
 #licbtn{position:fixed;right:var(--s4);bottom:var(--s4);z-index:70;font-family:var(--sans);font-size:12.5px;color:var(--ink-soft);background:rgba(255,255,255,.94);border:1px solid var(--line-strong);border-radius:999px;padding:var(--s2) var(--s3);min-height:36px;cursor:pointer;box-shadow:0 2px 8px rgba(22,32,46,.08);}
 #licbtn:hover{color:var(--ink);border-color:var(--ink-soft);}
@@ -511,6 +556,19 @@ footer{padding-bottom:calc(var(--s8) + 24px);}
 
 <button type="button" id="backmap" aria-hidden="true" tabindex="-1"><span class="arr" aria-hidden="true">↑</span><span id="backmaptext">한눈에 보기로</span></button>
 
+<button type="button" id="chatbtn" aria-haspopup="dialog" aria-controls="chat"><span class="cb-i" aria-hidden="true">?</span><span class="cb-t">무엇을 도와드릴까요?</span></button>
+<section id="chat" role="dialog" aria-modal="false" aria-labelledby="chathd" hidden>
+  <div class="ch-head">
+    <div><h2 id="chathd">연장통 길잡이</h2><p>상황을 말하면 알맞은 도구를 찾아 드려요</p></div>
+    <button type="button" class="ch-x" id="chatx" aria-label="길잡이 닫기">×</button>
+  </div>
+  <div class="ch-log" id="chatlog" aria-live="polite"></div>
+  <form class="ch-in" id="chatform" autocomplete="off">
+    <input id="chatq" type="text" placeholder="예: 학생이 일주일째 연락이 안 돼요" aria-label="질문 입력" enterkeyhint="send">
+    <button type="submit" aria-label="보내기">↑</button>
+  </form>
+  <p class="ch-note">AI가 아닌 정해진 규칙으로 도구를 안내합니다. 입력한 내용은 이 기기 밖으로 나가지 않지만, 학생 이름 등 개인정보는 적지 마세요.</p>
+</section>
 <button type="button" id="licbtn" aria-haspopup="dialog" aria-controls="lic">ⓘ 오픈소스 라이선스</button>
 
 <div id="lic" role="dialog" aria-modal="true" aria-labelledby="lict" hidden>
@@ -1488,6 +1546,127 @@ window.addEventListener("popstate", () => {
   if ($("#modal").classList.contains("on")) closeModal(true);
   stripHash();
 });
+
+/* ── 연장통 길잡이: 규칙형 대화 안내 ──
+   AI가 아니라 검색 엔진(rankSites)과 아래 메뉴·되묻기 규칙으로 답합니다.
+   도구를 새로 넣으면 CHAT_MENU나 CHAT_ASK에 한 줄씩 더하면 됩니다. 열쇠는 「부-번호」 */
+const CHAT_MENU = [
+  { label:"복무·휴가", ask:"어떤 것이 궁금하세요?", opts:[["휴가 종류와 일수","1-2"],["초과근무·출장·외출","1-18"],["외부강의·겸직","1-1"],["승진 점수","1-15"],["방학 중 비근무 직종 근무일수","1-9"]] },
+  { label:"학생 출결", ask:"어떤 결석인가요?", opts:[["아파서·병원 진료","2-1"],["감염병(독감·수두 등)","2-4"],["체험학습·가족여행","2-2"],["사유 없이 안 오거나 연락 두절","2-3"]] },
+  { label:"학적·전학", ask:"어떤 학적 업무인가요?", opts:[["전입·전출·유예·정원 외","1-20"],["외국 국적 학생","1-3"],["신입생 반편성","2-9"],["학년말 반편성","2-8"]] },
+  { label:"학급·생활지도", ask:"어떤 상황인가요?", opts:[["문제행동 지도","4-4"],["친구 관계·소외","4-2"],["학급규칙 만들기","4-1"],["나 전달법 대화","4-3"],["통지표·생활기록부 문장","2-7"],["학생 목표 인증","2-6"]] },
+  { label:"학부모·교권·학폭", ask:"어떤 일이 있었나요?", opts:[["학부모 상담 준비","4-5"],["상담인지 민원인지","4-6"],["교육활동 침해(교권)","1-14"],["학교폭력 사안","4-7"],["선물·청탁금지법","3-1"]] },
+  { label:"업무·행정", ask:"어떤 업무인가요?", opts:[["업무분장","1-19"],["보결 배정","1-10"],["시간표","1-8"],["공문·회의록","1-12"],["인수인계","1-13"],["월중·주간계획","1-11"],["인사 내규","1-17"],["연수비 정산","1-4"],["음료 주문 취합","1-7"]] },
+  { label:"연수", ask:"어떤 연수인가요?", opts:[["바이브 코딩 연수","3-6"],["수업 역량 진단","3-4"],["AI·디지털 역량 진단","3-5"],["청렴 연수 게임","3-1"],["교육활동보호 용어","3-2"],["교권 사안 대응 연습","3-3"],["학부모 법정교육 안내","1-5"]] },
+  { label:"안전·날씨", ask:"어떤 상황인가요?", opts:[["사고·응급·긴급 대응","1-6"],["미세먼지·폭염, 밖에 나가도 될까","2-5"],["감염병 등교중지","2-4"]] }
+];
+/* 짧고 애매한 질문이면 한 번 되묻습니다: [이런 말이 있고, 이런 말이 없으면, 이렇게 묻기] */
+const CHAT_ASK = [
+  [/결석|빠지|안\s*나와|못\s*나와|안\s*와/, /아프|아파|병원|감염|독감|수두|체험|여행|연락|무단|미인정|학원|코로나/, 1],
+  [/전학|전입|전출/, /외국|국적|다문화/, { ask:"어떤 전학인가요?", opts:[["일반 전입·전출","1-20"],["외국 국적·외국에서 온 학생","1-3"]] }],
+  [/상담/, /민원|준비|친구|관계/, { ask:"어떤 상담인가요?", opts:[["학부모 상담 준비·연습","4-5"],["상담인지 민원인지 구분","4-6"],["친구 관계 고민","4-2"]] }],
+  [/체험\s*학습|현장\s*학습|소풍/, /교외|가정|가족|여행|현장|인솔|안전|사고/, { ask:"어떤 체험학습인가요?", opts:[["가정에서 신청하는 교외체험학습","2-2"],["학교에서 가는 현장체험학습 안전","1-6"]] }],
+  [/반\s*편성|반\s*배정/, /신입|1\s*학년|예비/, { ask:"누구의 반편성인가요?", opts:[["재학생 학년말 반편성","2-8"],["신입생 반편성","2-9"]] }],
+  [/교권|침해/, /용어|퀴즈|연습|사례/, { ask:"무엇이 필요하세요?", opts:[["지금 일어난 일 판별·대응","1-14"],["연수용 사례 대응 연습","3-3"],["법률 용어 익히기","3-2"]] }],
+  [/연수/, /비|정산|영수증|코딩|바이브|ai|디지털|수업|청렴|교권|41|방학|법정|학부모/i, 6]
+];
+const chat = { el:$("#chat"), log:$("#chatlog"), q:$("#chatq"), pushed:false, started:false };
+const siteBy = k => SITES.find(s => keyOf(s) === k);
+function chatScroll(){ chat.log.scrollTop = chat.log.scrollHeight; }
+function chatSay(html, who){
+  const d = document.createElement("div");
+  d.className = "msg " + (who || "bot");
+  d.innerHTML = html;
+  chat.log.appendChild(d); chatScroll();
+}
+function chatChips(list){   /* list: [[글자, 동작], …] 동작 = "go:키" | "menu:번호" | "home" | "q:질문" */
+  const d = document.createElement("div");
+  d.className = "ch-chips";
+  d.innerHTML = list.map(([t, a, ghost]) => `<button type="button" class="${ghost ? "ghost" : ""}" data-ca="${esc(a)}">${esc(t)}</button>`).join("");
+  chat.log.appendChild(d); chatScroll();
+}
+function chatCard(s, main){
+  const p = partOf(s.p);
+  const d = document.createElement("div");
+  d.className = "ch-card" + (main ? " main" : "");
+  d.style.setProperty("--k", p.color); d.style.setProperty("--kl", p.light);
+  d.innerHTML = `<span class="cc-k">${esc(s.tag)}${s.m ? " · " + esc(s.m) : ""}</span><span class="cc-t">${esc(s.t)}</span>
+    ${main ? `<p class="cc-d">${esc(s.d)}</p>` : ""}
+    <div class="cc-a"><a href="${esc(s.u)}" target="_blank" rel="noopener">바로 열기 ↗</a><button type="button" data-ca="list:${keyOf(s)}">목록에서 보기</button></div>`;
+  chat.log.appendChild(d); chatScroll();
+}
+const MORE = [["다른 질문하기", "again", 1], ["처음으로", "home", 1]];
+function chatHome(){
+  chatSay("안녕하세요. 지금 어떤 일을 하고 계세요?<br>아래에서 고르거나, 상황을 문장으로 적어 주세요.");
+  chatChips(CHAT_MENU.map((m, i) => [m.label, "menu:" + i]));
+}
+function chatAnswer(keys, intro){
+  const list = keys.map(siteBy).filter(Boolean);
+  if (!list.length) return;
+  chatSay(intro || "이 도구가 가장 잘 맞아요.");
+  chatCard(list[0], true);
+  if (list.length > 1){ chatSay("함께 보면 좋은 도구예요."); list.slice(1, 3).forEach(s => chatCard(s)); }
+  chatChips(MORE);
+}
+function chatAskOpts(o){ chatSay(o.ask); chatChips(o.opts.map(([t, k]) => [t, "go:" + k]).concat([["잘 모르겠어요", "again", 1]])); }
+function chatQuery(text){
+  chatSay(esc(text), "me");
+  const raw = qWords(text).map(stemKo).filter(w => w.length >= 2 && !STOP.has(w));
+  /* 짧고 애매하면 되묻기 */
+  if (raw.length <= 3){
+    for (const [has, not, o] of CHAT_ASK){
+      if (has.test(text) && !not.test(text)){ chatAskOpts(typeof o === "number" ? CHAT_MENU[o] : o); return; }
+    }
+  }
+  const r = rankSites(text);
+  if (!r.length){
+    const near = nearest(text);
+    if (near.length){ chatAnswer(near.map(keyOf), "딱 맞는 도구를 찾지 못했어요. 혹시 이 가운데 있을까요?"); }
+    else { chatSay("딱 맞는 도구를 찾지 못했어요. 어느 쪽 일인지 골라 주시겠어요?"); chatChips(CHAT_MENU.map((m, i) => [m.label, "menu:" + i])); }
+    return;
+  }
+  const top = SIDX.find(d => d.s === r[0].s);
+  const weak = r[0].sc < WEAK_SCORE && raw.length >= 2 && !raw.every(w => top.all.includes(w));
+  if (weak){
+    chatSay("딱 맞는 도구는 없어요. 낱말이 일부 겹치는 도구를 보여 드릴게요.");
+    r.slice(0, 2).forEach(x => chatCard(x.s));
+    chatSay("어느 쪽 일인지 골라 주시면 더 정확히 찾아 드려요.");
+    chatChips(CHAT_MENU.map((m, i) => [m.label, "menu:" + i]));
+    return;
+  }
+  chatAnswer(r.slice(0, 3).map(x => keyOf(x.s)));
+}
+function chatAct(a){
+  if (a.startsWith("menu:")){ const m = CHAT_MENU[+a.slice(5)]; chatSay(esc(m.label), "me"); chatAskOpts(m); }
+  else if (a.startsWith("go:")){ const s = siteBy(a.slice(3)); if (s){ chatSay(esc(s.m || s.tag), "me"); chatAnswer([keyOf(s)]); } }
+  else if (a.startsWith("list:")){ const k = a.slice(5); if (isNarrow()) chatClose(); goTo(k); }
+  else if (a === "home"){ chatHome(); }
+  else if (a === "again"){ chatSay("네, 상황을 문장으로 적거나 아래에서 골라 주세요."); chatChips(CHAT_MENU.map((m, i) => [m.label, "menu:" + i])); chat.q.focus(); }
+}
+function chatOpen(){
+  if (!SIDX) buildSearchIndex();
+  chat.el.hidden = false; $("#chatbtn").classList.add("hide");
+  if (!chat.started){ chat.started = true; chatHome(); }
+  try { history.pushState({ chat:1 }, "", cleanURL()); chat.pushed = true; } catch(err){ chat.pushed = false; }
+  if (!isNarrow()) chat.q.focus();
+}
+function chatClose(fromHistory){
+  if (chat.el.hidden) return;
+  chat.el.hidden = true; $("#chatbtn").classList.remove("hide");
+  if (chat.pushed && !fromHistory){ chat.pushed = false; try { history.back(); } catch(err){} }
+  else chat.pushed = false;
+  $("#chatbtn").focus({ preventScroll:true });
+}
+$("#chatbtn").addEventListener("click", chatOpen);
+$("#chatx").addEventListener("click", () => chatClose());
+chat.log.addEventListener("click", e => { const b = e.target.closest("[data-ca]"); if (b) chatAct(b.dataset.ca); });
+$("#chatform").addEventListener("submit", e => {
+  e.preventDefault();
+  const t = chat.q.value.trim(); if (!t) return;
+  chat.q.value = ""; chatQuery(t);
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !chat.el.hidden && !$("#modal").classList.contains("on")) chatClose(); });
+window.addEventListener("popstate", () => { if (!chat.el.hidden) chatClose(true); });
 
 /* ── 복사 & 알림 ── */
 function copy(text, msg){
