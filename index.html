@@ -862,6 +862,7 @@ const SYNS = [
   /* 학적·출결·체험학습·감염병 */
   [/외국\s*국적|외국인|다문화|이주\s*(배경|민)|난민|(외국|해외)에서\s*(온|왔)|한국어를?\s*(못|모르)|중도\s*입국|고려인|러시아|중국|베트남|우즈벡|필리핀|몽골|캄보디아|태국|카자흐|키르기스|네팔|파키스탄|미얀마|인도네시아/, "외국국적^2 다문화"],
   [/학적|전학|전입|전출|편입|재취학|취학\s*(여부|유예|면제|의무|확인)|미취학|유예|면제|정원\s*외|졸업|진급|입학\s*(연기|서류|절차)|입학하거나|입학식.*(참석|불참|못|안)/, "학적 취학"],
+  [/중학교|진학|상급\s*학교/, "학적^2 졸업"],
   [/결석|지각생|출석|출결|진단서|진료\s*확인서|소견서|(학생|아이|자녀).{0,12}(병원|아프|아파|조퇴)/, "출결 결석"],
   [/(교외|가정)\s*체험|체험\s*학습\s*(신청|보고서|결과)|가정\s*학습|가족\s*여행|해외\s*여행/, "교외체험학습"],
   [/무단\s*결석|미인정|장기\s*결석|장기간\s*결석|연락\s*(두절|이?\s*안\s*(되|돼)|되지|이?\s*닿지)|학교\s*(에\s*)?안\s*(오|와|나와)|며칠째|일주일째|소재|가정\s*방문|정당한\s*사유\s*없이|(안|못)\s*나오|나오지\s*않/, "미인정결석 장기결석"],
@@ -874,7 +875,7 @@ const SYNS = [
   [/신입생|예비\s*소집|입학식|입학\s*(전|초)|1\s*학년\s*(적응|입학)/, "신입생 1학년"],
   [/반\s*편성|반\s*배정|반을?\s*나누|반\s*나누|학급\s*편성|같은\s*반|다른\s*반|반\s*배치/, "반편성"],
   [/통지표|생활\s*기록부|생기부|세특|행동\s*특성|행발|종합\s*의견|학기말|성취도/, "통지표 생활기록부"],
-  [/목표\s*(설정|세우)|성취\s*인증|칭찬\s*(스티커|제도)|자기\s*주도/, "목표 해냄"],
+  [/(^|[^육])목표\s*(설정|세우)|성취\s*인증|칭찬\s*(스티커|제도)|자기\s*주도/, "목표 해냄"],
   /* 학급운영·생활지도·상담 */
   [/교우\s*관계|친구\s*(관계|사이)|관계도|소시오|사회성\s*측정|따돌림|왕따|소외|외톨이|혼자\s*(지내|놀|노는|있)|친밀도|또래/, "교우관계 관계도"],
   [/학급\s*(규칙|약속|헌법|운영)|규칙을?\s*(만들|정하|세우)/, "학급규칙"],
@@ -946,7 +947,7 @@ function rankSites(q){
       if (f){ sc += wt * getIdf(w) * f * (1 + Math.min(w.length, 6) * 0.08); return; }
       /* 띄어 쓰지 않은 말: 질문 낱말 안에 도구 키워드가 들어 있으면 */
       if (w.length >= 3){
-        const t = d.toks.find(x => x.length >= 2 && x.length < w.length && w.includes(x));
+        const t = d.toks.find(x => x.length >= 2 && x.length < w.length && w.includes(x) && !STOP.has(x) && !LOW.has(x));
         if (t){ sc += wt * getIdf(t) * fieldHit(d, t) * 0.7; }
       }
     });
@@ -965,9 +966,17 @@ function hayOf(s){
   return ((SHOW_BOOK_CHAPTER ? s.c + " " : "") + s.t + " " + s.d + " " + s.who + " " + s.tag + " " + s.k).toLowerCase();
 }
 /* 같은 검색어면 순위를 다시 계산하지 않습니다 */
-let RANKQ = null, RANK = new Map();
+const WEAK_SCORE = 3;   /* 1순위 점수가 이보다 낮으면 약한 결과로 봅니다 */
+let RANKQ = null, RANK = new Map(), RANKWEAK = false;   /* RANKWEAK: 낱말 일부만 겹친 결과 */
 function ranked(){
-  if (RANKQ !== query){ RANKQ = query; RANK = new Map(rankSites(query).map((x, i) => [keyOf(x.s), i])); }
+  if (RANKQ !== query){
+    RANKQ = query; const r = rankSites(query);
+    RANK = new Map(r.map((x, i) => [keyOf(x.s), i]));
+    /* 점수가 낮고, 핵심 낱말 두 개 이상 가운데 1순위에 없는 말이 있으면 ‘딱 맞는 도구 없음’ */
+    const raw = qWords(query).map(stemKo).filter(w => w.length >= 2 && !STOP.has(w));
+    const top = r.length && SIDX.find(d => d.s === r[0].s);
+    RANKWEAK = !!top && r[0].sc < WEAK_SCORE && raw.length >= 2 && !raw.every(w => top.all.includes(w));
+  }
   return RANK;
 }
 function match(s){
@@ -1284,17 +1293,21 @@ function render(){
 
 /* 이번 달에 꺼내는 도구 ↔ 검색 중에는 같은 자리에 검색 결과 */
 const MONTH_NO = TODAY0.getMonth() + 1;
-function mcard(s, best){
+function mcard(s, best, label){
   const p = partOf(s.p);
   return `<button type="button" class="mcard${best ? " best" : ""}" data-go="${keyOf(s)}" style="--k:${p.color};--kl:${p.light}">
-    ${best ? '<span class="mb">가장 잘 맞는 도구</span>' : ""}<span class="mt">${esc(best ? s.t : s.tag)}</span><span class="mm">${esc(best ? s.d : (s.m || s.t))}</span><span class="ma" aria-hidden="true">›</span></button>`;
+    ${best ? `<span class="mb">${label || "가장 잘 맞는 도구"}</span>` : ""}<span class="mt">${esc(best ? s.t : s.tag)}</span><span class="mm">${esc(best ? s.d : (s.m || s.t))}</span><span class="ma" aria-hidden="true">›</span></button>`;
 }
 function renderQuick(items){
   const box = $("#monthly");
   if (query){
     box.classList.add("searching");
     box.hidden = false;
-    if (items.length){
+    if (items.length && RANKWEAK){
+      $("#mtitle").innerHTML = `딱 맞는 도구는 <span class="mmon">없습니다</span>`;
+      $("#mnote").textContent = "낱말이 일부 겹치는 도구입니다. ‘휴가’, ‘반편성’처럼 핵심 낱말로 다시 찾아보세요.";
+      $("#mlist").innerHTML = items.slice(0, 4).map(s => mcard(s)).join("");
+    } else if (items.length){
       $("#mtitle").innerHTML = `검색 결과 <span class="mmon">${items.length}개</span>`;
       $("#mnote").textContent = "질문과 잘 맞는 순서입니다. Enter(검색 키)를 누르면 첫 번째 도구로 갑니다.";
       $("#mlist").innerHTML = mcard(items[0], true) + items.slice(1, 4).map(s => mcard(s)).join("")
