@@ -299,6 +299,12 @@ footer .linkbtn:hover{color:var(--ink);}
 }
 @media print{#chatbtn,#chat{display:none !important;}}
 
+#visits{margin-left:6px;}
+#visits::before{content:"· ";}
+#visits b{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+@media(max-width:599px){#visits{display:block;margin:4px 0 0;}#visits::before{content:"";}}
+#visits[hidden]{display:none;}
+
 /* 오픈소스 라이선스 */
 #licbtn{position:fixed;right:var(--s4);bottom:var(--s4);z-index:70;font-family:var(--sans);font-size:12.5px;color:var(--ink-soft);background:rgba(255,255,255,.94);border:1px solid var(--line-strong);border-radius:999px;padding:var(--s2) var(--s3);min-height:36px;cursor:pointer;box-shadow:0 2px 8px rgba(22,32,46,.08);}
 #licbtn:hover{color:var(--ink);border-color:var(--ink-soft);}
@@ -538,7 +544,7 @@ footer{padding-bottom:calc(var(--s8) + 24px);}
 
   <footer>
     <div class="wrap fr">
-      <div id="footcredit">만든이 최창훈 · 초등학교 교감 · 2026</div>
+      <div id="footcredit">만든이 최창훈 · 초등학교 교감 · 2026<span id="visits" hidden></span></div>
       <div>
         <button class="linkbtn" id="reportsite" hidden>잘못된 내용 알려 주기</button>
         <button class="linkbtn" id="copyall">전체 목록을 텍스트로 복사</button>
@@ -673,14 +679,14 @@ THE FONT SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, E
 /* ══════════════════════════════════════════════════════════
    고쳐 쓰실 곳
    1) REPORT_EMAIL  — 오류 제보를 받을 메일 주소. 비우면 버튼이 안 나옵니다.
-   2) LAST_CHECKED  — 링크를 마지막으로 확인한 날. 푸터에 표시됩니다.
+   2) COUNTER_DB    — 방문자 수를 셀 Firebase Realtime Database 주소. 비우면 숫자가 안 나옵니다.
    3) SHOW_BOOK_CHAPTER — 책이 나오면 true 로.
    4) SITES         — 도구 이름(t), 설명(d), 대상(who), PC 권장(pc),
                       지도 칸 글자(tag), 서버 저장(store), 준비물(prep)
    ══════════════════════════════════════════════════════════ */
 
 const REPORT_EMAIL = "";              /* 예: "changhun@example.com" */
-const LAST_CHECKED = "2026. 9.";      /* 링크 점검한 달 */
+const COUNTER_DB = "https://edu-hub-5f30d-default-rtdb.asia-southeast1.firebasedatabase.app/";   /* 방문자 수 Firebase 주소 */
 const SHOW_BOOK_CHAPTER = false;
 /* 이번 달에 꺼내는 도구 — 달마다 3~4개, 앞에 둔 것부터 보여 줍니다. 열쇠는 「부-번호」 */
 const MONTHLY = {
@@ -1413,7 +1419,29 @@ $("#tocmini").innerHTML = PARTS.map(p =>
   $("#nbx").addEventListener("click", () => { bar.hidden = true; try { localStorage.setItem("hub.newseen", sig); } catch(err){} });
 })();
 
-if (LAST_CHECKED) $("#footcredit").textContent += " · 링크 점검 " + LAST_CHECKED;
+/* ── 방문자 수 (Firebase Realtime Database, SDK 없이 REST로) ──
+   같은 기기는 하루에 한 번만 셉니다. 날짜는 한국 시간 기준입니다. */
+(function(){
+  if (!COUNTER_DB) return;
+  const base = COUNTER_DB.replace(/\/+$/, "");
+  const day = new Date().toLocaleDateString("sv-SE", { timeZone:"Asia/Seoul" });   /* 2026-11-11 */
+  const el = $("#visits");
+  const fmt = n => Number(n || 0).toLocaleString("ko-KR");
+  const show = (today, total) => {
+    el.innerHTML = `오늘 <b>${fmt(today)}</b>명 · 지금까지 <b>${fmt(total)}</b>명이 다녀갔습니다`;
+    el.hidden = false;
+  };
+  let seen = ""; try { seen = localStorage.getItem("hub.visit") || ""; } catch(err){}
+  const read = () => Promise.all([
+    fetch(base + "/stats/total.json").then(r => r.json()),
+    fetch(base + "/stats/days/" + day + ".json").then(r => r.json())
+  ]).then(([total, today]) => show(today, total));
+  const inc = { ".sv": { "increment": 1 } };
+  const job = (seen === day) ? read()
+    : fetch(base + "/stats.json", { method:"PATCH", body: JSON.stringify({ "total": inc, ["days/" + day]: inc }) })
+        .then(r => { if (!r.ok) throw new Error("count " + r.status); try { localStorage.setItem("hub.visit", day); } catch(err){} return read(); });
+  job.catch(() => { el.hidden = true; });
+})();
 if (REPORT_EMAIL) $("#reportsite").hidden = false;
 function reportLink(name, url){
   return "mailto:" + REPORT_EMAIL
