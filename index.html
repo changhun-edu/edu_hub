@@ -978,6 +978,7 @@ const TODAY0 = (() => { const d = new Date(); d.setHours(0,0,0,0); return d; })(
    새 도구는 SITES의 added만 적으면 「새로」 소식이 저절로 만들어집니다.
    오타 수정처럼 쓰는 사람이 느끼지 못하는 변화는 적지 않습니다. */
 const NEWSLOG = [
+  { d:"2026-11-13", key:"2-1", kind:"up", text:"연장통 검색·길잡이가 출결 한눈에 안의 내용(가습기살균제 피해 결석 등)까지 찾아 바로 엽니다" },
   { d:"2026-11-13", key:"1-20", kind:"up", text:"연장통 검색·길잡이가 학적 한눈에 안의 내용(교육환경 전환 등)까지 찾아 바로 엽니다" },
   { d:"2026-11-13", key:"1-6", kind:"up", text:"현장체험학습 안전 탭을 더했습니다" },
   { d:"2026-11-13", key:"1-6", kind:"up", text:"체험학습 사고 9가지(식중독·실종 등)를 연장통 검색과 길잡이에서 바로 엽니다" }
@@ -1084,7 +1085,7 @@ function topicMatch(text){
    파일은 처음 검색하거나 길잡이를 열 때 한 번만 불러옵니다(없으면 조용히 건너뜀). */
 const DEEP_URL = "deep-index.json";
 /* 주소에 ?q=검색어 를 붙이면 그 사이트 검색이 바로 열리는 도구 — 기능을 넣은 사이트를 여기에 더합니다 */
-const DEEP_QLINK = new Set(["1-20", "1-6"]);
+const DEEP_QLINK = new Set(["1-20", "1-6", "2-1"]);
 let DEEP = null, DEEP_LOADING = null;
 function loadDeep(){
   if (!DEEP_LOADING){
