@@ -469,6 +469,12 @@ a.mcard{text-decoration:none;color:inherit;}
 .ch-card .cc-now li{margin-bottom:3px;}
 .ch-card .cc-a a.ghost{background:#fff;color:var(--ink);border:1px solid var(--line-strong);}
 
+/* 도구 속 내용 카드 */
+.dcard .dhint{font-size:11.5px;font-weight:700;color:var(--muted);}
+.dcard .dsnip{color:var(--ink);}
+.dsnip mark,.mcard mark{background:color-mix(in srgb,var(--new) 20%,#fff);color:inherit;padding:0 1px;border-radius:2px;}
+.dcard .dtip{font-size:12px;color:var(--muted);align-self:center;}
+
 /* 팁 「해 보기」를 눌렀을 때 한 번만 가리켜 주기 */
 .map.hint .cell[data-go]{animation:cellHint .9s ease-in-out 1;animation-delay:calc(var(--i, 0) * 22ms);}
 @keyframes cellHint{40%{background:var(--k);color:#fff;}}
@@ -972,6 +978,7 @@ const TODAY0 = (() => { const d = new Date(); d.setHours(0,0,0,0); return d; })(
    새 도구는 SITES의 added만 적으면 「새로」 소식이 저절로 만들어집니다.
    오타 수정처럼 쓰는 사람이 느끼지 못하는 변화는 적지 않습니다. */
 const NEWSLOG = [
+  { d:"2026-11-13", key:"1-20", kind:"up", text:"연장통 검색·길잡이가 학적 한눈에 안의 내용(교육환경 전환 등)까지 찾아 바로 엽니다" },
   { d:"2026-11-13", key:"1-6", kind:"up", text:"현장체험학습 안전 탭을 더했습니다" },
   { d:"2026-11-13", key:"1-6", kind:"up", text:"체험학습 사고 9가지(식중독·실종 등)를 연장통 검색과 길잡이에서 바로 엽니다" }
 ];
@@ -1069,6 +1076,73 @@ function topicMatch(text){
     if (sc > bs){ bs = sc; best = t; }
   });
   return bs >= 2 ? best : null;
+}
+
+/* ══ 도구 속 내용 색인(deep-index.json) — 두 번째 그물 ══════════
+   검색어 수집기(build-deep-index.mjs)가 각 도구 사이트에서 모은 문장입니다.
+   도구 이름·검색어로 못 찾은 말이 어느 도구 안에 나오는지 찾아 줍니다.
+   파일은 처음 검색하거나 길잡이를 열 때 한 번만 불러옵니다(없으면 조용히 건너뜀). */
+const DEEP_URL = "deep-index.json";
+/* 주소에 ?q=검색어 를 붙이면 그 사이트 검색이 바로 열리는 도구 — 기능을 넣은 사이트를 여기에 더합니다 */
+const DEEP_QLINK = new Set(["1-20", "1-6"]);
+let DEEP = null, DEEP_LOADING = null;
+function loadDeep(){
+  if (!DEEP_LOADING){
+    DEEP_LOADING = fetch(DEEP_URL, { cache:"no-cache" })
+      .then(r => r.ok ? r.json() : null)
+      .then(j => {
+        if (!j || !j.sites) return null;
+        DEEP = Object.entries(j.sites).map(([key, list]) => ({ key, s:SITES.find(x => keyOf(x) === key), list,
+          norm:list.map(x => x.toLowerCase().replace(/\s+/g, "")) })).filter(d => d.s && d.list.length);
+        return DEEP;
+      })
+      .catch(() => null);
+  }
+  return DEEP_LOADING;
+}
+/* 질문의 핵심 낱말(조사·흔한 말 뺀 것). 띄어 쓴 말은 붙인 꼴로도 찾습니다: 교육환경 전환 = 교육환경전환 */
+/* 묻는 말(뭐예요·알려 주세요·어떻게…)은 찾을 낱말에서 뺍니다 */
+const DEEP_ASK = /^(뭐|뭔|무슨|무엇|어떻|어떡|어디|언제|왜|누가|누구|얼마|몇|알려|알고|궁금|설명|의미|뜻|해야|하려|되나|하나|있나|없나|인가|일까|할까|될까|좋을|싶|주세)/;
+function deepWords(q){
+  return [...new Set(qWords(q).map(stemKo).filter(w => w.length >= 2 && !STOP.has(w) && !LOW.has(w) && !DEEP_ASK.test(w)))];
+}
+function deepSearch(q){
+  if (!DEEP) return [];
+  const words = deepWords(q); if (!words.length) return [];
+  const joined = words.join(""), weight = w => (w.length >= 3 ? 2 : 1);
+  const full = words.reduce((a, w) => a + weight(w), 0);
+  const pass = need => {
+    const out = [];
+    DEEP.forEach(d => {
+      let best = -1, bs = 0, cnt = 0;
+      d.norm.forEach((n, i) => {
+        let sc = (words.length > 1 && n.includes(joined)) ? full + 2 : 0;
+        if (!sc){ words.forEach(w => { if (n.includes(w)) sc += weight(w); }); if (sc < need) sc = 0; }
+        if (sc){ cnt++; if (sc > bs){ bs = sc; best = i; } }
+      });
+      if (best >= 0) out.push({ d, key:d.key, s:d.s, sc:bs * 100 + Math.min(cnt, 50), cnt, snip:d.list[best], words });
+    });
+    return out.sort((a, b) => b.sc - a.sc).slice(0, 5);
+  };
+  let r = pass(full);                                  /* 모든 낱말이 한 문장에 */
+  if (!r.length && words.length >= 2) r = pass(Math.ceil(full * 0.6));   /* 아니면 낱말 대부분이 한 문장에 */
+  return r;
+}
+function deepUrl(h){
+  return DEEP_QLINK.has(h.key) ? h.s.u + "?q=" + encodeURIComponent(h.words.join(" ")) : h.s.u;
+}
+/* 띄어쓰기가 달라도 찾은 말에 형광펜, 너무 길면 그 말 둘레만 */
+function deepSnip(h, max){
+  const pats = [h.words.join(""), ...h.words].sort((a, b) => b.length - a.length)
+    .map(w => [...w].map(c => c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("\\s*"));
+  const re = new RegExp("(" + pats.join("|") + ")", "i");
+  let t = h.snip; max = max || 96;
+  const m = t.match(re);
+  if (t.length > max){
+    const at = m ? m.index : 0, st = Math.max(0, Math.min(at - 24, t.length - max));
+    t = (st > 0 ? "…" : "") + t.slice(st, st + max) + (st + max < t.length ? "…" : "");
+  }
+  return esc(t).replace(new RegExp(pats.join("|"), "gi"), x => `<mark>${x}</mark>`);
 }
 
 /* 개수를 우리말로: 30 → "서른", 32 → "서른두". 100 이상은 숫자로. */
@@ -1487,6 +1561,21 @@ function card(s, p){
   </article>`;
 }
 
+/* 도구 속 내용 카드 — 그 말이 나오는 도구와 문장 한 줄 */
+let CUR_DEEP = [];
+function dcard(h){
+  const p = partOf(h.s.p), u = deepUrl(h), q = DEEP_QLINK.has(h.key);
+  return `<article class="item dcard" style="--k:${p.color};--kl:${p.light}" data-turl="${esc(u)}" data-url="${esc(u)}">
+    <span class="tagrow"><span class="tagbadge" aria-hidden="true">${esc(h.s.tag)}</span><span class="dhint">도구 안의 내용</span></span>
+    <h3><a href="${esc(u)}" target="_blank" rel="noopener">${esc(h.s.t)}</a></h3>
+    <p class="desc dsnip">${deepSnip(h, 150)}</p>
+    <p class="who"><span>이 도구 안 ${h.cnt}곳에 나옵니다</span></p>
+    <div class="acts">
+      <a class="pri" href="${esc(u)}" target="_blank" rel="noopener">${q ? "그 내용 바로 찾아 열기 ↗" : "도구 열기 ↗"}</a>
+      ${q ? "" : `<span class="dtip">열린 뒤 ‘${esc(h.words.join(" "))}’를 찾아보세요</span>`}
+    </div>
+  </article>`;
+}
 /* 도구 속 항목 카드(체험학습 사고 유형) — 누르면 안전 사이트의 그 카드가 바로 열립니다 */
 let CUR_TOPIC = null;
 function tcard(t){
@@ -1548,6 +1637,25 @@ function render(){
       </div>
     </section>`;
   });
+  /* 도구 속 내용: 위 결과에 없는 도구에서만, 또는 결과가 없거나 약할 때 */
+  CUR_DEEP = [];
+  if (query && fPart === "all" && DEEP){
+    const shown = new Set(query ? SITES.filter(match).map(keyOf) : []);
+    if (CUR_TOPIC) shown.add(CUR_TOPIC.site);
+    CUR_DEEP = deepSearch(query).filter(x => !shown.has(x.key) || !total || RANKWEAK);
+  }
+  if (CUR_DEEP.length){
+    const block = `<p class="bestlabel${total ? " more" : ""}">도구 안 내용에서 찾은 말</p>
+        <div class="grid">${CUR_DEEP.map(dcard).join("")}</div>`;
+    if (total) h = h.replace(/<\/div>\s*<\/section>\s*$/, block + "</div></section>");
+    else {
+      h = `<section class="part results" style="--k:var(--ink);--tint:#fff"><div class="wrap">
+        <div class="partrule"></div>
+        <div class="parthead"><h2>검색 결과</h2><span class="count">${CUR_DEEP.length}개</span></div>
+        <p class="partdesc">도구 이름에는 없지만, 아래 도구 안에 이 말이 나옵니다.</p>${block}</div></section>`;
+      total = CUR_DEEP.length;
+    }
+  }
   if (!total){
     const near = query ? nearest(query) : [];
     h = `<div class="empty wrap">
@@ -1574,7 +1682,7 @@ function render(){
   const hits = query ? SITES.filter(match).sort((a, b) => ranked().get(keyOf(a)) - ranked().get(keyOf(b))) : [];
   if (CUR_TOPIC){ const ts = SITES.find(s => keyOf(s) === CUR_TOPIC.site); const i = hits.indexOf(ts); if (i > 0) hits.splice(i, 1); if (ts && i !== 0) hits.unshift(ts); }
   renderQuick(hits);
-  const qc = $("#qcount"), qn = hits.length + (CUR_TOPIC ? 1 : 0);
+  const qc = $("#qcount"), qn = hits.length + (CUR_TOPIC ? 1 : 0) + CUR_DEEP.filter(x => !hits.some(s => keyOf(s) === x.key)).length;
   qc.classList.toggle("on", !!query);
   qc.classList.toggle("zero", !!query && !qn);
   qc.textContent = query ? qn + "개" : "";
@@ -1609,6 +1717,16 @@ function renderQuick(items){
           <ol class="mnow">${tp.now.map(x => `<li>${esc(x)}</li>`).join("")}</ol><span class="ma" aria-hidden="true">›</span></a>`
         + items.slice(0, 2).map(s => mcard(s)).join("")
         + `<button type="button" class="mall" data-scroll="list">결과 ${items.length + 1}개 모두 보기 ↓</button>`;
+      return;
+    }
+    const dq = CUR_DEEP.filter(x => !items.some(s => keyOf(s) === x.key));
+    if (dq.length && (!items.length || RANKWEAK)){
+      $("#mtitle").innerHTML = `도구 안에서 <span class="mmon">찾았습니다</span>`;
+      $("#mnote").textContent = "도구 이름에는 없지만, 아래 도구 안에 나오는 말입니다. 누르면 새 창으로 열립니다(Enter도 됩니다).";
+      $("#mlist").innerHTML = dq.slice(0, 3).map((h, i) => { const p = partOf(h.s.p);
+        return `<a class="mcard${i === 0 ? " best" : ""}" href="${esc(deepUrl(h))}" target="_blank" rel="noopener" style="--k:${p.color};--kl:${p.light}">
+          ${i === 0 ? `<span class="mb">도구 안의 내용 · ${h.cnt}곳</span>` : ""}<span class="mt">${esc(i === 0 ? h.s.t : h.s.tag)}</span><span class="mm">${deepSnip(h, i === 0 ? 110 : 60)}</span><span class="ma" aria-hidden="true">›</span></a>`; }).join("")
+        + (items.length ? items.slice(0, 2).map(s => mcard(s)).join("") : "");
       return;
     }
     if (items.length && RANKWEAK){
@@ -1824,6 +1942,7 @@ qEl.addEventListener("input", () => {
   query = qEl.value.trim();
   clearEl.classList.toggle("on", !!query);
   if (query.length >= 6 && /\s/.test(query)) markTipDone("sentence");
+  if (!DEEP) loadDeep().then(() => { if (query) render(); });
   render(); saveView();
 });
 qEl.addEventListener("keydown", e => {
@@ -1831,6 +1950,7 @@ qEl.addEventListener("keydown", e => {
   e.preventDefault();
   if (query && CUR_TOPIC){ markTipDone("enter"); window.open(topicUrl(CUR_TOPIC), "_blank", "noopener"); return; }
   const first = query && SITES.filter(match).sort((a, b) => ranked().get(keyOf(a)) - ranked().get(keyOf(b)))[0];
+  if (query && CUR_DEEP.length && (!first || RANKWEAK)){ markTipDone("enter"); window.open(deepUrl(CUR_DEEP[0]), "_blank", "noopener"); return; }
   if (first){ markTipDone("enter"); qEl.blur(); goTo(keyOf(first)); }
 });
 clearEl.addEventListener("click", () => { qEl.value = ""; query = ""; clearEl.classList.remove("on"); render(); saveView(); qEl.focus(); });
@@ -2204,9 +2324,11 @@ function chatDecideTools(text, plan){
     }
   }
   const r = rankSites(text);
-  if (!r.length) return Object.assign(plan, { type:"none" });   /* 글자 하나씩 맞춘 ‘가까운 도구’는 길잡이에서 쓰지 않습니다 */
+  const dh = deepSearch(text).filter(x => !r.slice(0, 3).some(y => keyOf(y.s) === x.key));
+  if (!r.length) return Object.assign(plan, dh.length ? { type:"deep", hits:dh } : { type:"none" });   /* 글자 하나씩 맞춘 ‘가까운 도구’는 길잡이에서 쓰지 않습니다 */
   const top = SIDX.find(d => d.s === r[0].s);
-  if (r[0].sc < WEAK_SCORE && raw.length >= 2 && !raw.every(w => top.all.includes(w))) return Object.assign(plan, { type:"weak", keys:r.slice(0, 2).map(x => keyOf(x.s)) });
+  if (r[0].sc < WEAK_SCORE && raw.length >= 2 && !raw.every(w => top.all.includes(w)))
+    return Object.assign(plan, dh.length ? { type:"deep", hits:dh } : { type:"weak", keys:r.slice(0, 2).map(x => keyOf(x.s)) });
   return Object.assign(plan, { type:"tools", keys:r.slice(0, 3).map(x => keyOf(x.s)), detail:true, num:NUM_Q.test(text), topScore:r[0].sc });
 }
 /* 도구 한 줄 정보: 대상 · PC 권장 · 서버 저장 · 준비물 */
@@ -2251,6 +2373,18 @@ function chatCard(s, main, text){
   chat.log.appendChild(d); chatScroll();
 }
 const MORE = [["다른 질문하기", "again", 1], ["처음으로", "home", 1]];
+/* 길잡이 속 도구 내용 카드 */
+function chatDeepCard(h, main){
+  const p = partOf(h.s.p), u = deepUrl(h), q = DEEP_QLINK.has(h.key);
+  const d = document.createElement("div");
+  d.className = "ch-card" + (main ? " main" : "");
+  d.style.setProperty("--k", p.color); d.style.setProperty("--kl", p.light);
+  d.innerHTML = `<span class="cc-k">${esc(h.s.tag)} · 도구 안의 내용</span><span class="cc-t">${esc(h.s.t)}</span>
+    <p class="cc-d dsnip">${deepSnip(h, 120)}</p>
+    <p class="cc-f">이 도구 안 ${h.cnt}곳에 나옵니다${q ? "" : ` · 열린 뒤 ‘${esc(h.words.join(" "))}’를 찾아보세요`}</p>
+    <div class="cc-a"><a href="${esc(u)}" target="_blank" rel="noopener">${q ? "그 내용 바로 찾아 열기 ↗" : "도구 열기 ↗"}</a></div>`;
+  chat.log.appendChild(d); chatScroll();
+}
 /* 길잡이 속 사고 유형 카드 */
 function chatTopicCard(t){
   const s = siteBy(t.site), p = partOf(s.p), u = topicUrl(t);
@@ -2303,6 +2437,11 @@ function chatRender(plan, text){
       chatChips([["다른 사고 유형 보기", "tplist:"]].concat(MORE));
       return;
     }
+    case "deep":
+      chatSay("도구 이름에는 없지만, 이 도구 안에 그 내용이 있어요.");
+      plan.hits.slice(0, 2).forEach((h, i) => chatDeepCard(h, i === 0));
+      chatChips(MORE);
+      return;
     case "foodschool":
       chatSay("학교 급식·교내에서 생긴 식중독 대응은 아직 연장통에 따로 정리된 도구가 없어요. 어디서든 공통으로 먼저 할 일만 알려 드릴게요.<br>① 증상 학생을 따로 모으고 명단(증상·시작 시각·먹은 음식)을 적어요.<br>② 같은 증세가 2명 이상이면 식중독 의심 — 관리자에게 보고하고 관할 보건소·교육(지원)청에 바로 알려요.<br>③ 남은 음식·보존식은 버리지 말고 그대로 보관해요.<br>자세한 절차는 보건교사·영양(교)사와 함께 교육청 지침을 확인해 주세요.");
       chatChips([["체험학습 중이라면", "tp:food"], ["119 전화", "tel:119"]].concat(MORE));
@@ -2345,7 +2484,9 @@ function chatRender(plan, text){
 }
 function chatQuery(text){
   chatSay(esc(text), "me");
-  chatRender(chatDecide(text), text);
+  /* 도구 속 내용 색인을 아직 못 불러왔으면 기다렸다가 답합니다(없으면 바로) */
+  const go = () => chatRender(chatDecide(text), text);
+  if (DEEP) go(); else loadDeep().then(go);
 }
 function chatAct(a){
   if (a.startsWith("menu:")){ const m = CHAT_MENU[+a.slice(5)]; chatSay(esc(m.label), "me"); chatRender({ type:"ask", ask:m.ask, opts:m.opts }); }
@@ -2367,6 +2508,7 @@ function chatAct(a){
 }
 function chatOpen(){
   if (!SIDX) buildSearchIndex();
+  loadDeep();
   markTipDone("chat");
   chat.el.hidden = false; $("#chatbtn").classList.add("hide");
   if (!chat.started){ chat.started = true; chatHome(); }
@@ -2453,6 +2595,7 @@ window.addEventListener("scroll", () => { clearTimeout(sid); sid = setTimeout(sa
 try { history.scrollRestoration = "manual"; } catch(err){}
 stripHash();
 const savedY = restoreView();
+if (query) loadDeep().then(() => { if (query) render(); });
 renderFilters();
 renderMap();
 render();
